@@ -1,34 +1,34 @@
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
-
 
 // Set these to run example.
 #define FIREBASE_HOST "jogodavelha-e0bcf.firebaseio.com"
 #define FIREBASE_AUTH "KpY56HlZz8m163RfjNXQwporGiHZwFf6aEtEsaQo"
-#define WIFI_SSID "Trojan.exe"
-#define WIFI_PASSWORD "Ds0179007"
+#define WIFI_SSID "BRITO"
+#define WIFI_PASSWORD "joaoarthur"
 
 int modo = 0;
 int mudou;
 int atual;
 
-StaticJsonBuffer<200> jsonBuffer;
+int cont = 0;
+
+StaticJsonBuffer<1000> jsonBuffer;
+
+// Functions
+void enviarDistanciaFirebase();
+void modoManual();
+void modoEstacionamento();
+void modoMapeamento();
+String verificaModo();
+void wifiTryConnect();
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("connecting");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println();
-  Serial.print("connected: ");
-  Serial.println(WiFi.localIP());
-
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-
+  wifiTryConnect();
   while (!Serial) {
     ;
   }
@@ -48,7 +48,7 @@ void loop() {
   /*
      // set string value
     Firebase.pushFloat("jogo", 2.1);
-    // handle error
+    // handle error 
     if (Firebase.failed()) {
         Serial.print("setting /message failed:");
         Serial.println(Firebase.error());
@@ -57,21 +57,20 @@ void loop() {
   */
 
   //Setar um novo objeto ao firebase
-  /*
-    JsonObject& obj = jsonBuffer.createObject();
-    obj["coluna"] = 3;
-    obj["linha"] = 0;
-    obj["valor"] = false;
+  
+    /*JsonObject& obj = jsonBuffer.createObject();
+    obj["coluna"] = 0;
+    obj["linha"] = cont++;
 
-    Firebase.push("jogo", obj);
+    Firebase.push("mapeamento", obj);
     if (Firebase.failed()) {
       Serial.print("setting /message failed:");
       Serial.println(Firebase.error());
       return;
-    }
-  */
+    }*/
+  
 
-  if (verificaModo() == "mapeamento") {
+  /*if (verificaModo() == "mapeamento") {
     Serial.println("7-");
     atual = 1;
     enviarDistanciaFirebase();
@@ -81,7 +80,7 @@ void loop() {
     modoManual();
   } else if (verificaModo() == "autonomo") {
     atual = 3;
-  }
+  }*/
 
   /*
   if (atual == 1) {
@@ -102,6 +101,16 @@ void loop() {
     modo++;
   }
   */
+  String modo = verificaModo();
+
+  if(modo == "manual"){
+    Serial.println("Modo Manual ativado");
+    modoManual();
+  }else if(modo == "estacionamento")
+    Serial.println("Modo Estacionamento ativado");
+  else
+    Serial.println("Modo Mapeamento ativado");
+    
   delay(1000);
 }
 
@@ -121,7 +130,6 @@ void enviarDistanciaFirebase() {
       return;
     }
 
-
     Firebase.pushInt("distancia", distancia);
     if (Firebase.failed()) {
     Serial.print("setting /message failed:");
@@ -130,7 +138,7 @@ void enviarDistanciaFirebase() {
     }
   */
 
-  int distancia;
+  /*int distancia;
 
   if (Serial.available() > 0) {
     //valorRecebido = (byte)Serial.read();
@@ -145,7 +153,8 @@ void enviarDistanciaFirebase() {
     Serial.print("setting /message failed:");
     Serial.println(Firebase.error());
     return;
-  }
+  }*/
+  
 }
 
 String verificaModo() {
@@ -158,22 +167,37 @@ void modoManual() {
   boolean direcao_frente = Firebase.getBool("/carro/frente");
   boolean direcao_parar = Firebase.getBool("/carro/parar");
 
-  //1: direita
-  //2: esquerda
-  //3: frente
-  //4: parar
+  if(direcao_direita == 1){
+    if(direcao_frente == 1)
+      Serial.println("Frente para há Direita");
+    else
+      Serial.println("Para há direita");  
+  }else if(direcao_esquerda == 1){
+    if(direcao_frente == 1)
+      Serial.println("Frente para há Esquerda");
+    else
+      Serial.println("Para há Esquerda");
+  }else if(direcao_frente == 1){
+    if(direcao_esquerda == 1)
+      Serial.println("Frente para há Esquerda");
+    else if(direcao_direita == 1)
+      Serial.println("Frente para há Direita");
+    else
+      Serial.println("Para há Frente");
+  }else{
+    Serial.println("Parar");  
+  }
+  
+}
 
-  if (direcao_direita == 1) {
-    Serial.println(1);
+void wifiTryConnect(){
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("connecting");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
   }
-  if (direcao_esquerda == 1) {
-    Serial.println(2);
-  }
-  if (direcao_frente == 1) {
-    Serial.println(3);
-  }
-  if (direcao_parar == 1) {
-    Serial.println(4);
-  }
-  //Serial.println(direcao);
+  Serial.println();
+  Serial.print("connected: ");
+  Serial.println(WiFi.localIP());
 }
