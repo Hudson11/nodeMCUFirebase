@@ -8,6 +8,7 @@
 #define WIFI_SSID "BRITO"
 #define WIFI_PASSWORD "joaoarthur"
 
+
 int modo = 0;
 int mudou;
 int atual;
