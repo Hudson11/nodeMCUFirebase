@@ -8,6 +8,20 @@
 #define WIFI_SSID "BRITO"
 #define WIFI_PASSWORD "joaoarthur"
 
+//
+IPAddress ip(10,77,12,33);
+IPAddress dns(8,8,8,8);
+IPAddress gateway(10,77,60,1);
+IPAddress subnet(255,255,248,0);
+
+/*
+  ip informattica  10,77,12,33
+  gateway informatica 12,1
+  ip container 10,77,32,31
+  gateway container 32,1
+  
+*/
+
 
 int modo = 0;
 int mudou;
@@ -29,6 +43,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  //WiFi.config(ip, dns, gateway, subnet);
   wifiTryConnect();
   while (!Serial) {
     ;
